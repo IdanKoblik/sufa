@@ -6,16 +6,31 @@
 #include <filesystem>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <csignal>
 
 #include "home.h"
+#include "cmd/cd_command.h"
+#include "cmd/command.h"
 
 const std::string PROMPT = "$ ";
 const std::string EXIT_COMMAND = "exit";
 
+std::map<std::string, Command*> commands;
+
 std::vector<char*> makeArgv(const std::vector<std::string>& args);
 std::vector<std::string> sanitizePath(const std::string& rawPath);
+void initBuiltinCommand();
+void cleanupCommands();
+void signalHandler(int signum);
 
 int main() {
+    std::signal(SIGINT, signalHandler);
+    std::signal(SIGHUP, signalHandler);
+    std::signal(SIGTERM, signalHandler);
+
+    atexit(cleanupCommands);
+    initBuiltinCommand();
+
     std::string input;
     std::string path = getenv("PATH");
     std::map<std::string, std::string> commandCache;
@@ -47,6 +62,11 @@ int main() {
 
         homeExpand(args);
         std::string cmd = args[0];
+        if (commands[cmd]) {
+            commands[cmd]->exec(args);
+            std::cout << PROMPT;
+            continue;
+        }
 
         if (commandCache.find(cmd) == commandCache.end()) {
             std::stringstream ss(path);
@@ -125,3 +145,20 @@ std::vector<std::string> sanitizePath(const std::string& rawPath) {
     return dirs;
 }
 
+void initBuiltinCommand() {
+    CdCommand *cd = new CdCommand();
+    commands[cd->getName()] = cd;
+}
+
+void cleanupCommands() {
+    for (auto& [name, cmd] : commands) {
+        delete cmd;
+    }
+
+    commands.clear();
+}
+
+void signalHandler(int signum) {
+    cleanupCommands();
+    std::exit(signum);
+}
