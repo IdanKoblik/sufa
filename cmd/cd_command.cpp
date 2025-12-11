@@ -3,7 +3,9 @@
 #include <filesystem>
 #include <unistd.h>
 
-void CdCommand::exec(const std::vector<std::string> &args) const {
+#include "../home.h"
+
+void CdCommand::exec(std::vector<std::string> &args) const {
     const char *target;
     if (args.size() == 1) {
         target = std::getenv("HOME");
@@ -12,6 +14,7 @@ void CdCommand::exec(const std::vector<std::string> &args) const {
         }
     } else {
         target = args[1].c_str();
+        homeExpand(args);
     }
 
     if (chdir(target) != 0) {

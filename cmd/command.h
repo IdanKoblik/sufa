@@ -12,7 +12,7 @@ public:
     Command(const std::string &name) : name(name) {}
     virtual ~Command() = default;
 
-    virtual void exec(const std::vector<std::string> &args) const = 0;
+    virtual void exec(std::vector<std::string> &args) const = 0;
     const std::string& getName() const { return name; }
 };
 
