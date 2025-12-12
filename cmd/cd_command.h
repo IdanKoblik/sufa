@@ -2,11 +2,13 @@
 #define SUFA_CD_COMMAND_H
 #include "command.h"
 
-const std::string NAME = "cd";
+namespace Cd {
+    const std::string NAME = "cd";
+}
 
 class CdCommand : public Command {
 public:
-    CdCommand() : Command(NAME) {}
+    CdCommand() : Command(Cd::NAME, {}) {}
     ~CdCommand() override = default;
 
     void exec(std::vector<std::string> &args) const override;

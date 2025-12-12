@@ -6,6 +6,12 @@
 #include "../home.h"
 
 void CdCommand::exec(std::vector<std::string> &args) const {
+    try {
+        Command::exec(args);
+    } catch (const std::runtime_error &e) {
+        std::cerr << "Base command error: " << e.what() << std::endl;
+    }
+
     if (args.empty())
         return;
 
