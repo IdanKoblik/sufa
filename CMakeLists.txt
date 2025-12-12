@@ -9,4 +9,13 @@ add_executable(sufa main.cpp
         cmd/command.h
         cmd/cd_command.cpp
         cmd/cd_command.h
+        cmd/cmd_cache.cpp
+        cmd/cmd_cache.h
+        cmd/command.cpp
+        managers/command_manager.cpp
+        managers/command_manager.h
+        signal.cpp
+        signal.h
+        args.cpp
+        args.h
 )
