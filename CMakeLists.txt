@@ -3,7 +3,8 @@ project(sufa)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(sufa main.cpp
+add_executable(sufa
+        main.cpp
         home.cpp
         home.h
         cmd/command.h
@@ -18,4 +19,10 @@ add_executable(sufa main.cpp
         signal.h
         args.cpp
         args.h
+        structs/trie.h
+        completion.h
+        completion.cpp
+        structs/trie.cpp
 )
+
+target_link_libraries(sufa PRIVATE readline history ncurses)

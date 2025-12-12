@@ -2,15 +2,17 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <map>
 #include <filesystem>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <csignal>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "args.h"
 #include "home.h"
 #include "signal.h"
+#include "completion.h"
 #include "cmd/cd_command.h"
 #include "cmd/cmd_cache.h"
 #include "cmd/command.h"
@@ -24,6 +26,7 @@ void initBuiltinCommand();
 
 int main() {
     initBuiltinCommand();
+    initCompletion();
 
     std::signal(SIGINT, signalHandler);
     std::signal(SIGHUP, signalHandler);
@@ -33,15 +36,23 @@ int main() {
     std::string input;
     std::string path = getenv("PATH");
 
-    std::cout << PROMPT;
-    while (std::getline(std::cin, input)) {
-        if (input == EXIT_COMMAND) {
-            exit(1);
+    while (true) {
+        char* raw = readline(PROMPT.c_str());
+        if (!raw) {
+            std::cout << std::endl;
+            break;
         }
 
+        std::string input(raw);
+        free(raw);
+
         if (input.empty()) {
-            std::cout << PROMPT;
             continue;
+        }
+
+        add_history(input.c_str());
+        if (input == EXIT_COMMAND) {
+            exit(0);
         }
 
         std::istringstream iss(input);
@@ -49,20 +60,18 @@ int main() {
         std::string token;
 
         while (iss >> token) {
-            if (!token.empty())
-                args.push_back(token);
+            args.push_back(token);
         }
 
         if (args.empty()) {
-            std::cout << PROMPT;
             continue;
         }
 
         homeExpand(args);
         std::string cmd = args[0];
+
         if (commandManager.getCommand(cmd)) {
             commandManager.getCommand(cmd)->exec(args);
-            std::cout << PROMPT;
             continue;
         }
 
@@ -72,26 +81,26 @@ int main() {
 
             while (std::getline(ss, dir, ':')) {
                 std::filesystem::path fullPath = dir + '/' + cmd;
-                if (std::filesystem::exists(fullPath) && access(fullPath.c_str(), X_OK) == 0) {
+                if (std::filesystem::exists(fullPath) &&
+                    access(fullPath.c_str(), X_OK) == 0)
+                {
                     commandManager.addCommandCache(cmd, fullPath.c_str());
                     break;
                 }
             }
 
             if (commandManager.getCommandCache(cmd).empty()) {
-                std::cout << cmd << ": command not found." << std::endl;
-                std::cout << PROMPT;
+                std::cout << cmd << ": command not found.\n";
                 continue;
             }
         }
 
         if (access(commandManager.getCommandCache(cmd).c_str(), X_OK) != 0) {
-            std::cout << cmd << ": command not executable." << std::endl;
-            std::cout << PROMPT;
+            std::cout << cmd << ": command not executable.\n";
             continue;
         }
 
-        const std::vector<char *> argv = makeArgv(args);
+        const std::vector<char*> argv = makeArgv(args);
         pid_t pid = fork();
         if (pid == 0) {
             execvp(commandManager.getCommandCache(cmd).c_str(), argv.data());
@@ -105,8 +114,6 @@ int main() {
         } else {
             perror("fork");
         }
-
-        std::cout << PROMPT;
     }
 
     return 0;
