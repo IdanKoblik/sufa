@@ -101,11 +101,7 @@ To define a new built-in command:
 
 1. Add a new `.cpp` and `.h` file under `cmd/`.
 
-2. Implement a function with the signature:
-
-   ```cpp
-   int builtin_name(const std::vector<std::string>& args);
-   ```
+2. Implement a function
 
 3. Register the built-in in the shell’s dispatch table (typically in `main.cpp`).
 
