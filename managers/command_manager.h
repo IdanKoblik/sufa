@@ -2,6 +2,7 @@
 #define SUFA_COMMAND_MANAGER_H
 #include <map>
 #include <string>
+#include <vector>
 
 class Command;
 
@@ -26,6 +27,7 @@ public:
     void removeCommand(const std::string& cmd);
     void cleanupCommands();
     Command *getCommand(const std::string& cmd) const;
+    const std::vector<std::string> getBuiltinCommands() const;
 
     void addCommandCache(const std::string& cmd, const std::string& path);
     void removeCommandCache(const std::string& cmd);

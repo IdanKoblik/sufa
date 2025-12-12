@@ -27,6 +27,17 @@ void CommandManager::cleanupCommands() {
     commands.clear();
 }
 
+const std::vector<std::string> CommandManager::getBuiltinCommands() const {
+    std::vector<std::string> result;
+    result.reserve(commands.size());
+
+    for (const auto& entry : commands) {
+        result.push_back(entry.first);
+    }
+
+    return result;
+}
+
 Command* CommandManager::getCommand(const std::string& cmd) const {
     auto it = commands.find(cmd);
     if (it != commands.end()) {
