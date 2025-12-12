@@ -6,6 +6,9 @@
 #include "../home.h"
 
 void CdCommand::exec(std::vector<std::string> &args) const {
+    if (args.empty())
+        return;
+
     const char *target;
     if (args.size() == 1) {
         target = std::getenv("HOME");
