@@ -27,6 +27,7 @@ int main() {
     std::signal(SIGINT, signalHandler);
     std::signal(SIGHUP, signalHandler);
     std::signal(SIGTERM, signalHandler);
+    std::signal(SIGQUIT, signalHandler);
 
     atexit(cleanupCommands);
     initBuiltinCommand();
